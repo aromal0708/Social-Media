@@ -1,14 +1,19 @@
-import Express from "express";
-import cors from "cors";
-import mongoose from "mongoose";
-import morgan from "morgan";
-import dotenv from "dotenv";
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const morgan = require("morgan");
+const dotenv = require("dotenv");
+const helmet = require("helmet");
 
-const app = Express();
+// Routes
+const userRoutes = require("./Routes/Users");
+const authRoutes = require("./Routes/Auth");
+
 dotenv.config();
-app.use(cors());
-app.use(morgan("common"));
 
+const app = express();
+
+// Mongo DB cinnection
 const connect = () => {
   mongoose
     .connect(process.env.MONGO_URL, {
@@ -17,13 +22,25 @@ const connect = () => {
     })
     .then(() => {
       console.log("DB Connected");
-    }).catch(err => console.log(err))
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
-app.use("/", (req, res) => {
-  res.send("Hello this is home page");
-});
+
+// middlewere
+
+app.use(express.json());
+app.use(helmet());
+app.use(cors());
+app.use(morgan("common"));
+
+// End-Points
+
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 app.listen(8000, () => {
-  connect()
-  console.log("Backend Connected");
+  console.log("Backend is Running");
+  connect();
 });
