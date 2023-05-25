@@ -67,8 +67,8 @@ router.put("/:id/follow", async (req, res) => {
       const currentUser = await User.findById(req.body.userId);
       if (!user.followers.includes(req.body.userId)) {
         await user.updateOne({ $push: { followers: req.body.userId } });
-        await currentUser.updateOne({ $push: { following: req.params.id} });
-        res.status(200).json("Followed")
+        await currentUser.updateOne({ $push: { following: req.params.id } });
+        res.status(200).json("Followed");
       } else {
         res.status(403).json("you already follow this user");
       }
@@ -79,4 +79,26 @@ router.put("/:id/follow", async (req, res) => {
     res.status(403).send("you can't follow yourself");
   }
 });
+
+//  Unfollow User
+router.put("/:id/unfollow", async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+      const user = await User.findById(req.params.id);
+      const currentUser = await User.findById(req.body.userId);
+      if (user.followers.includes(req.body.userId)) {
+        await user.updateOne({ $pull: { followers: req.body.userId } });
+        await currentUser.updateOne({ $pull: { following: req.params.id } });
+        res.status(200).json("unFollowed");
+      } else {
+        res.status(403).json("You don't follow this User");
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  } else {
+    res.status(403).send("you can't follow yourself");
+  }
+});
+
 module.exports = router;
